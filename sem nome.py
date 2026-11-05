@@ -1,41 +1,8 @@
-"""
-Simulador probabilístico de risco de inundação - Rio Rolante (RS)
-Mini TCC - IFRS
-
-Método: simulação de Monte Carlo.
-A cada rodada, as variáveis incertas são sorteadas dentro de uma faixa de
-incerteza e o modelo calcula o nível máximo do rio. Depois de milhares de
-rodadas, a probabilidade de transbordar é a fração das rodadas que passaram
-da cota.
-
-Cadeia do modelo (hora a hora):
-  chuva prevista --> hietograma (chuva ao longo do tempo)
-  umidade do solo + chuva antecedente + radiação --> umidade efetiva
-  umidade efetiva --> Curve Number (CN)           [método SCS-CN]
-  chuva acumulada + CN --> escoamento superficial [método SCS-CN]
-  escoamento --> vazão do rio (reservatório linear, gera a defasagem)
-  vazão --> nível do rio (curva-chave)
-
-ATENÇÃO: todo valor marcado com [CALIBRAR] é um PALPITE inicial e precisa
-ser trocado por dado real (ANA/Hidroweb, INMET, CEMADEN, SGB) ou ajustado
-comparando o modelo com eventos históricos (função validar). Modelo
-educativo: NÃO substitui os alertas da Defesa Civil.
-
-Usa SOMENTE módulos que já vêm com o Python (math, random, sys).
-Nada precisa ser instalado ou baixado, e tudo roda direto no terminal.
-
-Uso:
-  python simulador_enchente_rolante.py             # simula um cenário
-  python simulador_enchente_rolante.py --validar   # compara com eventos reais
-"""
 
 import math
 import random
 import sys
 
-# =====================================================================
-# 1. PARÂMETROS (tudo que precisa de fonte ou calibração fica aqui)
-# =====================================================================
 PARAMETROS = {
     # --- Bacia ---
     "area_bacia_km2": 300.0,         # [CALIBRAR] área da bacia até o ponto de medição
@@ -80,9 +47,6 @@ COTAS = {
 EVENTOS_HISTORICOS = []
 
 
-# =====================================================================
-# 2. FUNÇÕES AUXILIARES
-# =====================================================================
 def limitar(x, minimo, maximo):
     return max(minimo, min(maximo, x))
 
@@ -91,7 +55,6 @@ def evapotranspiracao_mm_dia(radiacao_mj_m2_dia):
     """ET de referência por radiação (Makkink simplificado), em mm/dia.
     Mais radiação solar = mais água evaporada do solo."""
     return max(0.0, 0.149 * radiacao_mj_m2_dia - 0.12)
-
 
 def umidade_efetiva(umidade_sensor, chuva_5d_mm, radiacao, duracao_h, ruido):
     """Combina sensor de umidade, chuva dos últimos 5 dias e radiação.
@@ -105,7 +68,6 @@ def umidade_efetiva(umidade_sensor, chuva_5d_mm, radiacao, duracao_h, ruido):
     umid -= perda_mm / p["armazenamento_solo_mm"]
     return limitar(umid + ruido, 0.0, 1.0)
 
-
 def hietograma(chuva_total_mm, duracao_h):
     """Distribui a chuva total ao longo das horas com um pico em posição
     aleatória (chuva real não cai uniforme)."""
@@ -116,7 +78,6 @@ def hietograma(chuva_total_mm, duracao_h):
     soma = sum(pesos)
     return [chuva_total_mm * w / soma for w in pesos]
 
-
 def escoamento_scs(chuva_acumulada_mm, cn):
     """Escoamento superficial acumulado (mm) pelo método SCS-CN."""
     s = 25400.0 / cn - 254.0   # retenção potencial
@@ -124,8 +85,6 @@ def escoamento_scs(chuva_acumulada_mm, cn):
     if chuva_acumulada_mm <= ia:
         return 0.0
     return (chuva_acumulada_mm - ia) ** 2 / (chuva_acumulada_mm - ia + s)
-
-
 def vazao_de_nivel(nivel_m, a):
     p = PARAMETROS
     if nivel_m <= p["h0"]:
@@ -137,10 +96,6 @@ def nivel_de_vazao(vazao_m3s, a):
     p = PARAMETROS
     return p["h0"] + a * vazao_m3s ** p["b"]
 
-
-# =====================================================================
-# 3. UMA RODADA DO MODELO
-# =====================================================================
 def uma_rodada(cenario):
     """Roda o modelo uma vez com valores sorteados.
     Retorna (nível máximo em metros, hora em que o pico ocorreu)."""
@@ -199,9 +154,6 @@ def uma_rodada(cenario):
     return nivel_max, hora_pico
 
 
-# =====================================================================
-# 4. MONTE CARLO
-# =====================================================================
 def percentil(ordenada, fracao):
     return ordenada[int(fracao * (len(ordenada) - 1))]
 
@@ -227,9 +179,6 @@ def monte_carlo(cenario, n_rodadas=10000, semente=None):
     }
 
 
-# =====================================================================
-# 5. SAÍDAS (texto e histograma no terminal)
-# =====================================================================
 def histograma_ascii(picos, n_faixas=12, largura=40):
     minimo, maximo = picos[0], picos[-1]
     if maximo - minimo < 1e-9:
@@ -266,9 +215,6 @@ def mostrar_resultado(res):
     print("\nAviso: modelo educativo. Siga a Defesa Civil e o CEMADEN.")
 
 
-# =====================================================================
-# 6. VALIDAÇÃO COM EVENTOS REAIS
-# =====================================================================
 def validar(n_rodadas=5000):
     if not EVENTOS_HISTORICOS:
         print("Preencha a lista EVENTOS_HISTORICOS no começo do arquivo "
@@ -288,9 +234,6 @@ def validar(n_rodadas=5000):
     print("Se muitos ficarem FORA, ajuste os parâmetros [CALIBRAR] e repita.")
 
 
-# =====================================================================
-# 7. ENTRADA DE DADOS
-# =====================================================================
 def ler_float(msg, minimo=0.0, maximo=None):
     while True:
         try:
@@ -332,10 +275,6 @@ def coletar_cenario():
         "nivel_inicial_m": ler_float("Nível atual do rio (metros): "),
     }
 
-
-# =====================================================================
-# 8. PROGRAMA PRINCIPAL
-# =====================================================================
 def main():
     if "--validar" in sys.argv:
         validar()

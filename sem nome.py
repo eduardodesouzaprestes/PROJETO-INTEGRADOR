@@ -5,32 +5,28 @@ import sys
 
 PARAMETROS = {
     # --- Bacia ---
-    "area_bacia_km2": 300.0,         # [CALIBRAR] área da bacia até o ponto de medição
-    "armazenamento_solo_mm": 100.0,  # [CALIBRAR] quanto o solo "guarda" de água
+    "area_bacia_km2": 300.0,         
+    "armazenamento_solo_mm": 100.0,  
 
-    # --- Escoamento superficial (SCS Curve Number) ---
-    "cn_solo_seco": 55,              # [CALIBRAR] CN com solo seco
-    "cn_solo_umido": 90,             # [CALIBRAR] CN com solo saturado
-    "incerteza_cn": 4.0,             # desvio padrão do CN sorteado
+    "cn_solo_seco": 55,              
+    "cn_solo_umido": 90,           
+    "incerteza_cn": 4.0,            
 
-    # --- Resposta da bacia (defasagem) ---
-    "k_reservatorio_h": (3.0, 8.0),  # [CALIBRAR] faixa do tempo de resposta (horas)
-    "horas_pos_chuva": 36,           # horas simuladas depois que a chuva acaba
+    "k_reservatorio_h": (3.0, 8.0),  
+    "horas_pos_chuva": 36,           
 
-    # --- Curva-chave: nível = h0 + a * vazão^b ---
-    "h0": 0.5,                       # [CALIBRAR] com dados da estação fluviométrica
-    "a": 0.12,                       # [CALIBRAR]
-    "b": 0.55,                       # [CALIBRAR]
-    "incerteza_a": 0.10,             # incerteza relativa (10%) da curva-chave
-
-    # --- Umidade do solo ---
-    "peso_sensor_umidade": 0.6,      # [CALIBRAR] peso do sensor x chuva antecedente
-    "chuva_5d_saturacao_mm": 80.0,   # [CALIBRAR] chuva de 5 dias que satura o solo
-    "incerteza_umidade": 0.05,       # erro da medida de umidade (fração, 0 a 1)
+    "h0": 0.5,                       
+    "a": 0.12,                      
+    "b": 0.55,                       
+    "incerteza_a": 0.10,            
+    
+    "peso_sensor_umidade": 0.6,      
+    "chuva_5d_saturacao_mm": 80.0,   
+    "incerteza_umidade": 0.05,       
 
     # --- Chuva e radiação ---
-    "incerteza_previsao": 0.25,      # erro relativo da previsão de chuva (25%)
-    "incerteza_radiacao": 0.15,      # erro relativo da radiação (15%)
+    "incerteza_previsao": 0.25,      
+    "incerteza_radiacao": 0.15,      
 }
 
 # Cotas de referência do rio, em metros.  [CALIBRAR] buscar fonte oficial
